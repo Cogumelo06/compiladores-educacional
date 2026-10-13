@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Primeira etapa de um software educacional para estudo de compiladores e da linguagem C." />
+    <title>Compiladores | Etapa 1</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <div class="logo" aria-hidden="true">{ C }</div>
+        <div>
+          <p class="eyebrow">PROJETO EDUCACIONAL</p>
+          <p class="brand">Laboratório de Compiladores</p>
+        </div>
+      </header>
+
+      <section class="card" aria-labelledby="title">
+        <span class="tag">Etapa 01 · Estrutura inicial</span>
+        <h1 id="title">Seu ambiente está pronto para começar.</h1>
+        <p class="description">
+          A interface conversa com o backend por meio do Docker Compose.
+          A mensagem abaixo é recebida diretamente da API.
+        </p>
+
+        <div class="terminal" aria-label="Resposta do backend">
+          <div class="terminal-bar"><span></span><span></span><span></span><small>resposta da API</small></div>
+          <p id="hello" class="hello" aria-live="polite">Conectando ao backend...</p>
+        </div>
+        <p id="status" class="status" role="status">Verificando a comunicação entre os serviços...</p>
+      </section>
+
+      <footer class="footer">
+        <span><strong>Linguagem estudada:</strong> C (subconjunto)</span>
+        <span><strong>Ambiente:</strong> Frontend + Backend + Docker</span>
+      </footer>
+    </main>
+  </body>
+</html>
