@@ -3,40 +3,102 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Primeira etapa de um software educacional para estudo de compiladores e da linguagem C." />
-    <title>Compiladores | Etapa 1</title>
+    <meta name="description" content="Laboratório de Compiladores: experimente código C e acompanhe o retorno do servidor." />
+    <title>Laboratório de Compiladores | Etapa 2</title>
     <link rel="stylesheet" href="/style.css" />
-    <script src="/app.js" defer></script>
+    <script type="module" src="/app.js"></script>
   </head>
   <body>
+    <div class="page-glow" aria-hidden="true"></div>
     <main class="container">
-      <header class="header">
-        <div class="logo" aria-hidden="true">{ C }</div>
-        <div>
-          <p class="eyebrow">PROJETO EDUCACIONAL</p>
-          <p class="brand">Laboratório de Compiladores</p>
+      <header class="masthead">
+        <div class="identity">
+          <div class="logo" aria-hidden="true">{ C }</div>
+          <div>
+            <p class="eyebrow">AMBIENTE EDUCACIONAL</p>
+            <p class="brand">Laboratório de Compiladores</p>
+          </div>
         </div>
+        <div class="version"><span class="version-dot" aria-hidden="true"></span> Etapa 02 <span class="version-split">/</span> Código-fonte</div>
       </header>
 
-      <section class="card" aria-labelledby="title">
-        <span class="tag">Etapa 01 · Estrutura inicial</span>
-        <h1 id="title">Seu ambiente está pronto para começar.</h1>
-        <p class="description">
-          A interface conversa com o backend por meio do Docker Compose.
-          A mensagem abaixo é recebida diretamente da API.
-        </p>
-
-        <div class="terminal" aria-label="Resposta do backend">
-          <div class="terminal-bar"><span></span><span></span><span></span><small>resposta da API</small></div>
-          <p id="hello" class="hello" aria-live="polite">Conectando ao backend...</p>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="kicker"><span class="kicker-line"></span> EXPLORAÇÃO PRÁTICA · LINGUAGEM C</p>
+          <h1 id="page-title">Entenda o código.<br/><em>Uma etapa de cada vez.</em></h1>
+          <p class="description">Escreva ou escolha um programa em C, envie para o servidor e acompanhe a confirmação do recebimento. As análises léxica, sintática e semântica serão adicionadas nas próximas etapas.</p>
         </div>
-        <p id="status" class="status" role="status">Verificando a comunicação entre os serviços...</p>
+        <div class="info-tile" aria-label="Informação do escopo">
+          <div class="info-tile-label">ESCOPO ATUAL</div>
+          <div class="info-tile-icon" aria-hidden="true">&lt;/&gt;</div>
+          <strong>Subconjunto de C</strong>
+          <p>Variáveis inteiras, expressões e condicionais.</p>
+          <span class="info-tile-foot">Preparado para evoluir →</span>
+        </div>
       </section>
 
-      <footer class="footer">
-        <span><strong>Linguagem estudada:</strong> C (subconjunto)</span>
-        <span><strong>Ambiente:</strong> Frontend + Backend + Docker</span>
-      </footer>
+      <section class="workspace" aria-label="Área de experimentação">
+        <div class="panel editor-panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="step-number">01</span>
+              <div><h2>Editor de código</h2><p>Insira seu programa-fonte</p></div>
+            </div>
+            <span class="language-tag">C</span>
+          </div>
+
+          <form id="source-form" novalidate>
+            <label for="example-select" class="field-label">COMEÇAR COM UM EXEMPLO <span>(opcional)</span></label>
+            <div class="select-wrap"><select id="example-select" name="exemplo">
+              <option value="">Selecione um exemplo de código...</option>
+            </select></div>
+
+            <div class="editor-label-row">
+              <label for="source-code" class="field-label">SEU CÓDIGO-FONTE</label>
+              <span id="source-stats" class="source-stats" aria-live="polite">1 linha · 0 caracteres</span>
+            </div>
+            <div class="code-window">
+              <div class="code-toolbar" aria-hidden="true"><div class="dots"><i></i><i></i><i></i></div><span>programa.c</span><span class="code-mode">C · texto</span></div>
+              <textarea id="source-code" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="editor-help" placeholder="// Escreva seu código C aqui...&#10;int numero = 10;&#10;int resultado = numero + 5;"></textarea>
+            </div>
+            <p id="editor-help" class="editor-help">Esta etapa recebe o texto sem executar o programa ou verificar sua sintaxe.</p>
+
+            <div class="editor-actions">
+              <button type="button" id="clear-code" class="btn btn-ghost">Limpar editor</button>
+              <button type="submit" id="analyze-button" class="btn btn-primary">Solicitar processamento <span aria-hidden="true">→</span></button>
+            </div>
+            <p id="form-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <aside class="panel result-panel" id="result-panel" data-state="idle" aria-labelledby="result-label">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="step-number">02</span>
+              <div><h2 id="result-label">Retorno do servidor</h2><p>Resposta real da API</p></div>
+            </div>
+            <span class="api-pill"><span></span> /api/analyze</span>
+          </div>
+          <div class="result-content" role="status" aria-live="polite">
+            <div class="result-symbol" aria-hidden="true">↗</div>
+            <p class="result-overline">STATUS DA SOLICITAÇÃO</p>
+            <h3 id="result-title">Aguardando envio</h3>
+            <p id="result-message">O resultado da comunicação com o servidor aparecerá aqui.</p>
+            <div id="result-detail" class="result-detail" hidden>
+              <p class="result-detail-label">CÓDIGO CONFIRMADO PELO BACKEND</p>
+              <pre id="result-code"></pre>
+            </div>
+          </div>
+          <div class="journey">
+            <p class="journey-title">EVOLUÇÃO DO PROJETO</p>
+            <div class="journey-item current"><span class="journey-icon">✓</span><span>Entrada e envio de código</span><small>Etapa 2</small></div>
+            <div class="journey-item"><span class="journey-icon">·</span><span>Análise léxica</span><small>Futura</small></div>
+            <div class="journey-item"><span class="journey-icon">·</span><span>Análises sintática e semântica</span><small>Futuras</small></div>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="footer"><span>Laboratório de Compiladores · Projeto educacional</span><span>Frontend + Backend + Docker Compose</span></footer>
     </main>
   </body>
 </html>

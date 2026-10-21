@@ -1,0 +1,5 @@
+Coloque nesta pasta um print REAL da interface em execução, mostrando o editor
+com código C e a resposta da API após clicar em "Solicitar processamento".
+Nome sugerido: interface-funcionando.png.
+Nenhuma captura foi incluída automaticamente porque a política do navegador
+deste ambiente impediu a navegação para a aplicação local.
