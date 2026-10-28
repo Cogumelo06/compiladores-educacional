@@ -1,4 +1,5 @@
 import { EXAMPLES, findExample, sourceStats, validateSource, submitSource, friendlyError } from './examples.js';
+import { showLexicalResults } from './token-view.js';
 
 export function initApplication(doc = document, fetcher = fetch) {
   const form = doc.querySelector('#source-form');
@@ -13,6 +14,7 @@ export function initApplication(doc = document, fetcher = fetch) {
   const detail = doc.querySelector('#result-detail');
   const code = doc.querySelector('#result-code');
   const result = doc.querySelector('#result-panel');
+  const lexical = doc.querySelector('#lexical-section');
 
   for (const example of EXAMPLES) {
     const option = doc.createElement('option');
@@ -33,10 +35,11 @@ export function initApplication(doc = document, fetcher = fetch) {
 
   const resetResult = () => {
     heading.textContent = 'Aguardando envio';
-    message.textContent = 'O resultado da comunicação com o servidor aparecerá aqui. Nenhuma análise de compilação é realizada nesta etapa.';
+    message.textContent = 'Escolha um exemplo ou digite código C para identificar os tokens. A análise sintática e a semântica ainda não estão disponíveis.';
     result.dataset.state = 'idle';
     detail.hidden = true;
     code.textContent = '';
+    lexical.hidden = true;
   };
 
   select.addEventListener('change', () => {
@@ -75,6 +78,7 @@ export function initApplication(doc = document, fetcher = fetch) {
       heading.textContent = 'Entrada inválida';
       message.textContent = invalid;
       detail.hidden = true;
+      lexical.hidden = true;
       editor.focus();
       return;
     }
@@ -86,25 +90,30 @@ export function initApplication(doc = document, fetcher = fetch) {
     message.textContent = 'Aguardando confirmação do servidor.';
     result.dataset.state = 'pending';
     detail.hidden = true;
+    lexical.hidden = true;
 
     try {
       const response = await submitSource(submitted, fetcher);
-      heading.textContent = 'Código recebido com sucesso';
+      heading.textContent = response.sucesso ? 'Tokens identificados!' : 'Erros léxicos encontrados';
       message.textContent = response.mensagem;
       code.textContent = response.codigo;
       detail.hidden = false;
-      result.dataset.state = 'success';
-      setFeedback('Conexão com o backend confirmada. O editor permanece disponível.');
+      result.dataset.state = response.sucesso ? 'success' : 'error';
+      showLexicalResults(doc, response);
+      setFeedback(response.sucesso
+        ? 'Scanner executado. Explore a sequência de tokens abaixo.'
+        : 'O scanner encontrou erros. Confira a localização abaixo.', !response.sucesso);
     } catch (error) {
       const readable = friendlyError(error);
       heading.textContent = 'Não foi possível concluir o envio';
       message.textContent = readable;
       result.dataset.state = 'error';
       detail.hidden = true;
+      lexical.hidden = true;
       setFeedback(readable, true);
     } finally {
       send.disabled = false;
-      send.textContent = 'Solicitar processamento';
+      send.textContent = 'Analisar código';
     }
   });
 

@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Laboratório de Compiladores: experimente código C e acompanhe o retorno do servidor." />
-    <title>Laboratório de Compiladores | Etapa 2</title>
+    <meta name="description" content="Laboratório de Compiladores: visualize tokens e erros léxicos de programas em C." />
+    <title>Laboratório de Compiladores | Etapa 3</title>
     <link rel="stylesheet" href="/style.css" />
     <script type="module" src="/app.js"></script>
   </head>
@@ -19,21 +19,21 @@
             <p class="brand">Laboratório de Compiladores</p>
           </div>
         </div>
-        <div class="version"><span class="version-dot" aria-hidden="true"></span> Etapa 02 <span class="version-split">/</span> Código-fonte</div>
+        <div class="version"><span class="version-dot" aria-hidden="true"></span> Etapa 03 <span class="version-split">/</span> Scanner</div>
       </header>
 
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
           <p class="kicker"><span class="kicker-line"></span> EXPLORAÇÃO PRÁTICA · LINGUAGEM C</p>
           <h1 id="page-title">Entenda o código.<br/><em>Uma etapa de cada vez.</em></h1>
-          <p class="description">Escreva ou escolha um programa em C, envie para o servidor e acompanhe a confirmação do recebimento. As análises léxica, sintática e semântica serão adicionadas nas próximas etapas.</p>
+          <p class="description">Explore como o scanner lê um programa C: descubra palavras reservadas, identificadores, operadores e literais, com linha e coluna. As análises sintática e semântica virão nas próximas etapas.</p>
         </div>
         <div class="info-tile" aria-label="Informação do escopo">
           <div class="info-tile-label">ESCOPO ATUAL</div>
           <div class="info-tile-icon" aria-hidden="true">&lt;/&gt;</div>
           <strong>Subconjunto de C</strong>
           <p>Variáveis inteiras, expressões e condicionais.</p>
-          <span class="info-tile-foot">Preparado para evoluir →</span>
+          <span class="info-tile-foot">Scanner léxico ativo →</span>
         </div>
       </section>
 
@@ -61,11 +61,11 @@
               <div class="code-toolbar" aria-hidden="true"><div class="dots"><i></i><i></i><i></i></div><span>programa.c</span><span class="code-mode">C · texto</span></div>
               <textarea id="source-code" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="editor-help" placeholder="// Escreva seu código C aqui...&#10;int numero = 10;&#10;int resultado = numero + 5;"></textarea>
             </div>
-            <p id="editor-help" class="editor-help">Esta etapa recebe o texto sem executar o programa ou verificar sua sintaxe.</p>
+            <p id="editor-help" class="editor-help">O scanner identifica tokens e erros léxicos. O programa não é executado e sua sintaxe não é validada.</p>
 
             <div class="editor-actions">
               <button type="button" id="clear-code" class="btn btn-ghost">Limpar editor</button>
-              <button type="submit" id="analyze-button" class="btn btn-primary">Solicitar processamento <span aria-hidden="true">→</span></button>
+              <button type="submit" id="analyze-button" class="btn btn-primary">Analisar código <span aria-hidden="true">→</span></button>
             </div>
             <p id="form-feedback" class="form-feedback" role="status" aria-live="polite"></p>
           </form>
@@ -75,7 +75,7 @@
           <div class="panel-header">
             <div class="panel-title-group">
               <span class="step-number">02</span>
-              <div><h2 id="result-label">Retorno do servidor</h2><p>Resposta real da API</p></div>
+              <div><h2 id="result-label">Resultado do scanner</h2><p>Análise léxica real no backend</p></div>
             </div>
             <span class="api-pill"><span></span> /api/analyze</span>
           </div>
@@ -83,19 +83,56 @@
             <div class="result-symbol" aria-hidden="true">↗</div>
             <p class="result-overline">STATUS DA SOLICITAÇÃO</p>
             <h3 id="result-title">Aguardando envio</h3>
-            <p id="result-message">O resultado da comunicação com o servidor aparecerá aqui.</p>
+            <p id="result-message">Os resultados da análise léxica aparecerão aqui.</p>
             <div id="result-detail" class="result-detail" hidden>
-              <p class="result-detail-label">CÓDIGO CONFIRMADO PELO BACKEND</p>
+              <p class="result-detail-label">CÓDIGO ENVIADO (NÃO EXECUTADO)</p>
               <pre id="result-code"></pre>
             </div>
           </div>
           <div class="journey">
             <p class="journey-title">EVOLUÇÃO DO PROJETO</p>
             <div class="journey-item current"><span class="journey-icon">✓</span><span>Entrada e envio de código</span><small>Etapa 2</small></div>
-            <div class="journey-item"><span class="journey-icon">·</span><span>Análise léxica</span><small>Futura</small></div>
+            <div class="journey-item current"><span class="journey-icon">✓</span><span>Análise léxica</span><small>Etapa 3</small></div>
             <div class="journey-item"><span class="journey-icon">·</span><span>Análises sintática e semântica</span><small>Futuras</small></div>
           </div>
         </aside>
+      </section>
+
+      <section id="lexical-section" class="panel lexical-section" aria-labelledby="lexical-title" hidden>
+        <div class="panel-header">
+          <div class="panel-title-group"><span class="step-number">03</span><div>
+            <h2 id="lexical-title">Mapa de tokens</h2>
+            <p>Explore cada lexema, sua categoria e localização no código</p>
+          </div></div>
+          <span id="token-summary" class="language-tag">0 tokens</span>
+        </div>
+        <div class="lexical-intro">
+          <strong>Como ler o resultado?</strong>
+          <p><b>Token</b> é a classificação reconhecida pelo scanner; <b>lexema</b> é o trecho exato encontrado no código. Clique nos elementos da sequência ou utilize as setas para navegar. Um código pode estar correto lexicalmente e conter erros sintáticos.</p>
+        </div>
+        <div class="lexical-layout">
+          <div class="lexical-main">
+            <h3>01 / Sequência de tokens</h3>
+            <div id="token-chips" class="token-chips" aria-label="Tokens em ordem de leitura"></div>
+            <div class="token-stepper">
+              <button id="previous-token" type="button" class="btn btn-ghost" aria-label="Token anterior">← Anterior</button>
+              <p id="token-inspector" role="status" aria-live="polite"></p>
+              <button id="next-token" type="button" class="btn btn-ghost" aria-label="Próximo token">Próximo →</button>
+            </div>
+            <h3>02 / Tabela de classificação</h3>
+            <div class="token-table-wrap"><table class="token-table">
+              <thead><tr><th>Categoria</th><th>Lexema</th><th>Linha</th><th>Coluna</th></tr></thead>
+              <tbody id="tokens-body"></tbody>
+            </table></div>
+          </div>
+          <aside class="lexical-aside">
+            <h3>Contagem por categoria</h3>
+            <ul id="category-counts" class="category-counts"></ul>
+            <h3>Diagnóstico de erros</h3>
+            <ul id="lexical-errors" class="lexical-errors" aria-live="polite"></ul>
+            <p class="lexical-note">Comentários e espaços são ignorados. A análise sintática e a semântica ainda não estão disponíveis.</p>
+          </aside>
+        </div>
       </section>
 
       <footer class="footer"><span>Laboratório de Compiladores · Projeto educacional</span><span>Frontend + Backend + Docker Compose</span></footer>

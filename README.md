@@ -1,42 +1,44 @@
-# Laboratório de Compiladores — Trabalho 2
+# Laboratório de Compiladores — Trabalho 3: Análise Léxica
 
-Software educacional desenvolvido **a partir do Trabalho 1**, preservando a arquitetura com **frontend HTML/CSS/JavaScript**, **backend Node.js**, **Nginx** e **Docker Compose**.
+Aplicação web educacional para visualizar como um **scanner** reconhece os tokens de programas escritos em um **subconjunto de C**. Esta versão continua os Trabalhos 1 (estrutura Docker e Hello World) e 2 (editor, três exemplos, API e testes). **Não executa código e ainda não faz análise sintática ou semântica.**
 
-A linguagem **estudada é C**, conforme a escolha registrada no README original entregue no Trabalho 1. O recorte inicial contempla variáveis inteiras, operadores aritméticos, comparações, atribuições, comentários de linha e condicionais `if`/`else`. Não há suporte planejado nesta etapa a ponteiros, vetores, funções, bibliotecas externas, laços ou tipos além de `int`.
+**Tecnologias preservadas:** frontend HTML/CSS/JavaScript servido por Nginx, backend Node.js 22 (sem dependências externas), Docker Compose e testes nativos do Node.js. O scanner foi implementado em JavaScript no backend para manter o projeto simples e reutilizar a validação HTTP anterior. Não foi incorporado um compilador C externo.
 
-> **Limite da Etapa 2:** a aplicação **não compila, executa nem analisa** a sintaxe do código informado. O processamento atual consiste em **receber o texto pelo backend, validar o formato da requisição e confirmar seu recebimento**. A análise léxica, sintática e semântica fica para trabalhos posteriores.
+## 1. Funcionalidades desta etapa
 
-## 1. O que mudou em relação ao Trabalho 1
+- O editor permite digitar, colar, selecionar um dos três exemplos do Trabalho 2, editar e limpar o conteúdo.
+- `POST /api/analyze` recebe o mesmo JSON e devolve **tokens, lexemas, linha, coluna, deslocamentos no texto original e erros léxicos**, com indicador `sucesso`.
+- O scanner percorre o texto caractere a caractere; ignora espaços e comentários; agrupa lexemas; identifica sequências inválidas; recupera-se de erros quando possível.
+- O frontend exibe o número de tokens e erros, **sequência interativa** (clique no token ou navegue por Anterior/Próximo), tabela com categorias e posições, contagem por categoria e diagnósticos didáticos.
+- A tabela e a visualização usam `textContent` para exibir código potencialmente inválido sem interpretá-lo como HTML.
+- As rotas `/api/hello` e `/api/health`, o limite de tamanho e as validações anteriores foram preservados.
 
-- Interface principal com nome do projeto, linguagem C e indicação da etapa atual.
-- Editor em fonte monoespaçada que permite digitar, colar, editar e limpar código-fonte.
-- **Três exemplos selecionáveis**, que preenchem o editor e podem ser modificados.
-- Botão **Solicitar processamento**, que usa uma requisição real `POST /api/analyze` através do proxy Nginx.
-- Área de retorno que mostra sucesso, erros de entrada, falhas de rede e confirmação do código recebido.
-- Validação no frontend **e no backend**, preservando código com caracteres especiais ou erros de sintaxe intencionais.
-- Testes automatizados de backend, frontend, regressão e verificação de integração HTTP.
-- Atualização do workflow do GitHub Actions e da documentação.
-- **Preservadas** as rotas de demonstração `/api/hello` e de disponibilidade `/api/health` do Trabalho 1.
+## 2. Escopo léxico documentado (subconjunto didático de C)
 
-## 2. Os três exemplos da interface
+| Categoria | Regra e exemplos | Observação |
+|---|---|---|
+| Palavras reservadas | `int`, `if`, `else`, `while`, `return` | Identificação léxica não significa suporte sintático a essas construções |
+| Identificadores | `[A-Za-z_][A-Za-z0-9_]*` | Sensíveis a maiúsculas e minúsculas; sem letras Unicode |
+| Inteiros | Dígitos decimais (`0`, `42`, `123`) | Não reconhece números hexadecimais, binários ou sufixos |
+| Reais | Dígitos `.` dígitos (`3.14`) | Sem notação científica, sufixos ou `.5`; aceitos lexicalmente, não avaliados |
+| Strings | `"texto"`, aceitando `\\n`, `\\r`, `\\t`, `\\0`, `\\\\`, `\\"` e `\\'` | String não fechada ou escape não previsto gera erro |
+| Caracteres | `'x'`, `'\\n'` | Exatamente um caractere/escape entre aspas simples |
+| Operadores aritméticos e de atribuição | `+`, `-`, `*`, `/`, `=` | Operadores compostos como `+=`, `++` não estão no escopo |
+| Relacionais e lógicos | `<`, `>`, `<=`, `>=`, `==`, `!=`, `!`, `&&`, `||` | O scanner reconhece o maior operador compatível primeiro |
+| Delimitadores | `(`, `)`, `{`, `}`, `[`, `]`, `;`, `,` | Pontuação reconhecida, sem parser |
+| Comentários | `//` até o fim da linha; `/* ... */` em uma ou mais linhas | Ignorados; bloco não fechado gera erro |
+| Espaços | Espaço, tab, CR, LF, CRLF, VT, FF | Ignorados; posição de linha/coluna começa em 1 |
+| Fora do subconjunto | `@`, `#`, `$`, `12abc`, `3.`, escapes inválidos | Gera `ERRO_LEXICO` com trecho e localização; o scanner tenta continuar |
 
-### Exemplo 1 — Variável e inicialização
+**Distinção importante:** o scanner pode reconhecer tokens de um código **sintaticamente incorreto**; por exemplo, `int x = ;` não produz erro léxico. Não declara tipos, não verifica escopo, não analisa expressão, não compila e não executa o código.
 
-```c
-int numero = 10;
-```
+## 3. Três exemplos mantidos
 
-Demonstra declaração e inicialização de uma variável `int`.
+**Variável e inicialização:** `int numero = 10;`
 
-### Exemplo 2 — Expressão aritmética
+**Expressão aritmética:** `int resultado = 10 + 5 * 2;`
 
-```c
-int resultado = 10 + 5 * 2;
-```
-
-Demonstra operadores aritméticos e a precedência de `*` e `+`.
-
-### Exemplo 3 — Estrutura condicional
+**Estrutura condicional:**
 
 ```c
 int numero = 10;
@@ -46,187 +48,150 @@ if (numero > 0) {
 }
 ```
 
-Demonstra uma comparação, bloco `if` e atribuição. Os códigos são apenas textos enviados ao servidor; o sistema ainda não verifica se estão corretos.
+Para testar erros, experimente `int @numero = 10;` ou `/* comentário sem fechamento`.
 
-## 3. Estrutura do projeto
+## 4. Organização dos arquivos
 
 ```text
 compiladores-educacional/
-├── .github/workflows/ci.yml     # Testes e verificação Docker na CI
+├── .github/workflows/ci.yml   # Testes e Docker em GitHub Actions
 ├── backend/
-│   ├── src/app.js                # API, contrato e validações de entrada
-│   ├── src/server.js             # Inicialização HTTP
-│   ├── test/app.test.js          # Testes da API e regressão
-│   ├── Dockerfile
-│   └── package.json
+│   ├── src/app.js              # Contrato HTTP, validação de entrada e scanner
+│   ├── src/scanner.js          # Scanner C com posição, tokens e erros
+│   ├── src/server.js           # API Node.js
+│   └── test/                   # Scanner e endpoints
 ├── frontend/
-│   ├── index.html                # Tela de experimentação
-│   ├── style.css                 # Estilos e responsividade
-│   ├── app.js                    # Interações da interface
-│   ├── examples.js               # Exemplos, validação e requisição
-│   ├── test/app.test.js          # Testes de componentes e interações
-│   ├── nginx.conf                # Servidor estático e proxy /api
-│   ├── Dockerfile
+│   ├── index.html, style.css   # Layout e responsividade
+│   ├── app.js                  # Integração editor e API
+│   ├── examples.js             # Exemplos e cliente HTTP
+│   ├── token-view.js           # Mapa didático, tabela, navegação e erros
+│   ├── test/                   # Interações com DOM simulado
+│   ├── nginx.conf, Dockerfile
 │   └── package.json
-├── docs/REGISTRO_TESTES.md       # Evidências, execuções e pendências
-├── scripts/smoke-test.sh         # Teste HTTP da integração completa
+├── docs/
+│   └── REGISTRO_TESTES.md      # Evidências verificáveis da execução
+├── scripts/smoke-test.sh      # Integração HTTP real
 ├── compose.yaml
-├── .gitignore
 └── README.md
 ```
 
-## 4. Pré-requisitos
+## 5. Executar o sistema
 
-Para executar a aplicação:
-
-- **Docker Engine 24+** e **Docker Compose V2** (ou Docker Desktop com Compose integrado).
-- Internet na primeira execução para baixar imagens de Node.js e Nginx.
-- Porta **8080** livre no computador.
-
-Para rodar os testes de JavaScript **fora do Docker**, instale também **Node.js 22**. Para executar o smoke test HTTP, use `curl` em um terminal compatível com `sh` (Linux, macOS, WSL ou Git Bash). O frontend não usa bibliotecas JavaScript externas e o backend só utiliza módulos nativos do Node.js; não é preciso `npm install`.
-
-## 5. Executar com Docker Compose
-
-Na raiz do projeto, execute:
+**Pré-requisitos:** Docker Engine + Docker Compose V2; porta 8080 disponível. No Linux, pode ser necessário executar comandos Docker com `sudo` quando o usuário não tiver permissão para acessar o daemon.
 
 ```bash
 docker compose up --build -d
+docker compose ps
 ```
 
-Aguarde os serviços iniciarem e abra **http://localhost:8080**.
+Abra **http://localhost:8080**. Escolha um exemplo ou cole seu próprio código C; clique em **Analisar código**; consulte a sequência interativa, a tabela e os erros apresentados abaixo do editor. O botão **Limpar editor** restaura o estado inicial.
 
-O Compose gerencia dois serviços:
-
-- `frontend`: Nginx publicado **apenas localmente** na porta `127.0.0.1:8080`.
-- `backend`: Node.js na porta interna `3000`, acessado pelo Nginx por meio da rota `/api/`.
-
-O navegador envia requisições para `/api/analyze` no mesmo endereço da interface. Não é necessário acessar o backend diretamente nem configurar CORS.
-
-Comandos úteis:
+O frontend Nginx é publicado em `127.0.0.1:8080` e encaminha `/api/` ao backend Node.js na rede interna do Compose. Nenhuma porta externa é aberta diretamente para o backend. Para encerrar:
 
 ```bash
-docker compose ps
-docker compose logs -f
 docker compose down
 ```
 
-## 6. Como usar a interface
-
-1. Abra `http://localhost:8080`.
-2. Digite um trecho em C no editor **ou** selecione um dos três exemplos.
-3. Altere o texto como desejar.
-4. Clique em **Solicitar processamento**.
-5. Confira o retorno real do backend no painel à direita: código recebido, confirmação e informação de que a análise de compilação ainda não foi implementada.
-6. Experimente apagar o texto, digitar apenas espaços e desativar o backend para observar os diferentes erros.
-
-O editor mantém seu conteúdo após um envio ou falha. O botão **Limpar editor** apaga o campo e restaura o painel inicial.
-
-## 7. Contrato da API
+## 6. Contrato da API
 
 ### `POST /api/analyze`
 
-Requisição:
-
-```http
-Content-Type: application/json
-```
+Requisição: `Content-Type: application/json`.
 
 ```json
-{
-  "codigo": "int numero = 10;"
-}
+{ "codigo": "int numero = 10;" }
 ```
 
-Resposta bem-sucedida (`HTTP 200`):
+Exemplo da resposta HTTP 200 (abreviado para os campos pedagógicos principais; os tokens também contêm `inicio` e `fim`):
 
 ```json
 {
   "recebido": true,
   "linguagem": "C",
-  "etapa": 2,
-  "mensagem": "Código-fonte recebido com sucesso. A análise de compilação será implementada nas próximas etapas.",
+  "etapa": 3,
+  "mensagem": "Análise léxica concluída: 5 token(s) identificado(s).",
   "caracteres": 16,
   "linhas": 1,
-  "codigo": "int numero = 10;"
+  "codigo": "int numero = 10;",
+  "sucesso": true,
+  "tokens": [
+    { "tipo": "PALAVRA_RESERVADA", "lexema": "int", "linha": 1, "coluna": 1, "inicio": 0, "fim": 3 },
+    { "tipo": "IDENTIFICADOR", "lexema": "numero", "linha": 1, "coluna": 5, "inicio": 4, "fim": 10 },
+    { "tipo": "OPERADOR", "lexema": "=", "linha": 1, "coluna": 12, "inicio": 11, "fim": 12 },
+    { "tipo": "LITERAL_INTEIRO", "lexema": "10", "linha": 1, "coluna": 14, "inicio": 13, "fim": 15 },
+    { "tipo": "DELIMITADOR", "lexema": ";", "linha": 1, "coluna": 16, "inicio": 15, "fim": 16 }
+  ],
+  "erros": []
 }
 ```
 
-O campo `codigo` é devolvido integralmente para confirmar que o texto recebido é exatamente o texto enviado; nenhum código-fonte é executado, analisado ou armazenado em banco de dados.
+Resposta com erro léxico para `int @x;`: **HTTP 200** (requisição válida), `sucesso: false`, tokens reconhecidos e:
 
-| HTTP | Situação | Comportamento |
-|---|---|---|
-| `200` | JSON válido e código com conteúdo | Confirma recebimento e devolve texto/metadados |
-| `400` | JSON inválido, campo ausente ou tipo incorreto | Mensagem de validação apropriada |
-| `413` | Corpo acima de 32 KB | Avisa sobre o limite de tamanho |
-| `415` | `Content-Type` diferente de JSON | Solicita envio em JSON |
-| `422` | Campo vazio ou só espaços | Solicita um código-fonte não vazio |
-| `404` | Rota desconhecida | Retorna rota não encontrada |
-| `500` | Falha interna imprevista | Mensagem genérica, sem expor detalhes internos |
+```json
+"erros": [
+  { "tipo": "ERRO_LEXICO", "lexema": "@", "linha": 1, "coluna": 5,
+    "inicio": 4, "fim": 5,
+    "mensagem": "Caractere não reconhecido: \"@\". Verifique o subconjunto de C suportado." }
+]
+```
 
-Outros endpoints **preservados do Trabalho 1**:
+Um erro léxico **não** é erro HTTP. `sucesso` sinaliza o resultado da tokenização, e `erros` traz os diagnósticos. Erros de formato da requisição mantêm as regras da Etapa 2:
 
-- `GET /api/hello` → `{"message":"Hello, World!","language":"C","stage":1}`.
-- `GET /api/health` → `{"status":"ok"}`.
+| HTTP | Situação |
+|---|---|
+| 200 | Código recebido; scanner executado, com `sucesso: true` ou `false` |
+| 400 | JSON inválido, campo ausente ou tipo incorreto |
+| 413 | Requisição acima de 32 KB |
+| 415 | `Content-Type` incompatível |
+| 422 | Código vazio ou apenas espaços |
+| 404 | Rota desconhecida |
+| 500 | Falha inesperada, sem detalhes internos |
 
-## 8. Testes automatizados
+`GET /api/hello` e `GET /api/health` preservam os contratos originais de Trabalho 1.
 
-Com Node.js 22 instalado:
+## 7. Testes e regressão
+
+No terminal, a partir da raiz do projeto, com **Node.js 22**:
 
 ```bash
 npm --prefix backend test
 npm --prefix frontend test
 ```
 
-Os testes cobrem validações de entrada, contrato HTTP, erros, rotas anteriores, componentes esperados da interface, seleção dos três exemplos, edição, limpeza, envio e tratamento de falhas.
+Os testes incluem: palavras reservadas, identificadores, literais, operadores, delimitadores, comentários, posição em CRLF/LF/CR, erros léxicos, casos de borda, API, interface, interações e regressões dos Trabalhos 1 e 2. Testes de frontend utilizam DOM simulado — não substituem teste manual em navegador.
 
-Com o Compose iniciado:
+Com Docker Compose iniciado:
 
 ```bash
 sh scripts/smoke-test.sh
 ```
 
-Este script verifica a interface, a disponibilidade dos exemplos, o proxy `/api`, os endpoints antigos, o recebimento real do código por `POST` e a rejeição de um campo contendo só espaços.
+Este script verifica a página, os exemplos, os arquivos de visualização, o proxy HTTP, tokens, erros léxicos, `/api/hello`, `/api/health` e validação de entrada vazia. Os testes também são executados pela configuração do **GitHub Actions** após um push.
 
-**Resultados de execução e limitações** são registrados em [`docs/REGISTRO_TESTES.md`](docs/REGISTRO_TESTES.md). O GitHub Actions (`.github/workflows/ci.yml`) também está configurado para executar testes do backend, do frontend e uma instalação limpa com Docker Compose a cada push ou pull request.
+Consulte [`docs/REGISTRO_TESTES.md`](docs/REGISTRO_TESTES.md) para os resultados efetivamente observados e pendências não verificadas.
 
-## 9. Validar uma instalação limpa
+## 8. Demonstração, evidências e publicação
 
-Em uma máquina com Docker instalado:
+Para o **print** exigido pelo professor, abra o aplicativo; selecione `Estrutura condicional`; clique em **Analisar código** e capture o editor junto da sequência/tabela de tokens. Para evidenciar diagnóstico, envie também `int @numero = 10;` e capture a lista de erros. Guarde as imagens em `docs/evidencias/` caso deseje versioná-las.
 
-```bash
-git clone URL_REAL_DO_SEU_REPOSITORIO
-cd compiladores-educacional
-docker compose up --build --force-recreate -d
-sh scripts/smoke-test.sh
-docker compose down
-```
-
-Substitua `URL_REAL_DO_SEU_REPOSITORIO` pelo endereço do seu projeto no GitHub. O procedimento foi preparado para ser reproduzível, mas a execução completa **com Docker** deve ser confirmada na sua máquina ou no GitHub Actions, pois o ambiente usado nesta revisão não possuía o comando Docker.
-
-## 10. Evidência visual e entrega no GitHub
-
-Com a aplicação em funcionamento, selecione **Estrutura condicional**, clique em **Solicitar processamento** e faça uma captura de tela mostrando:
-
-- O nome do software e a identificação da linguagem C.
-- O código-fonte no editor.
-- A confirmação do código recebido no painel de resultados.
-
-Guarde o print como `docs/evidencias/interface-funcionando.png` e envie-o junto com o trabalho, como solicitado pelo professor. **A captura visual ainda precisa ser feita** em um navegador com acesso ao aplicativo; não foi gerado um print fictício.
-
-Para atualizar seu repositório, na pasta já conectada ao GitHub:
+Para atualizar **o mesmo repositório**, usando a pasta local já conectada ao GitHub e preservando a pasta `.git`:
 
 ```bash
-git add .
-git commit -m "feat: interface e envio de codigo C com testes automatizados"
-git push
+git status
+git add -A
+git commit -m "Trabalho 3: scanner lexico C, visualizacao e testes"
+git push origin main
 ```
 
-Se ainda não houver repositório Git remoto configurado, faça a configuração usando a URL real e confirme que o professor **`rocha3runo`** mantém acesso conforme a orientação da disciplina. **Nenhum push automático foi feito neste pacote.**
+Repositório anteriormente utilizado: https://github.com/Cogumelo06/compiladores-educacional. Não crie um segundo repositório; mantenha a continuidade histórica dos Trabalhos 1 e 2. Se o push for rejeitado por alterações remotas, investigue antes de qualquer correção; **não use `git push --force`**.
 
-## 11. Limitações atuais
+## 9. Limitações e próximas etapas
 
-- O projeto **não** realiza análises léxica, sintática e semântica e **não** executa o programa digitado.
-- Não há editor avançado, autocompletar ou numeração de linhas (não obrigatórios nesta etapa).
-- A persistência do texto vale durante o uso da página; recarregá-la restaura o editor vazio.
-- O retorno apresenta um recibo de processamento, não um diagnóstico da validade do código C.
-- A execução local com Docker e a captura de tela real devem ser confirmadas fora deste ambiente, conforme indicado no registro de testes.
+- **Não há parser**: não são verificados parênteses equilibrados, gramática ou construções válidas de C. O significado das variáveis também não é analisado.
+- O scanner cobre **um subconjunto lexical didático**, e não o padrão completo de C (sem pré-processador, números com expoente, Unicode, macros, sufixos de tipos, etc.).
+- A interface mostra categorias/lexemas, não uma árvore sintática ou tabela de símbolos. Essas estruturas caberão a etapas futuras.
+- O frontend mantém código apenas durante a sessão da página; recarregar restaura o editor.
+- Responsividade visual foi prevista; acessibilidade com leitores de tela e usabilidade em celulares exigem avaliação prática adicional.
+- A integração em contêineres deve ser confirmada no computador do usuário/GitHub Actions se o ambiente de preparação não tiver Docker.
+
+O scanner foi estruturado em módulo separado (`backend/src/scanner.js`) para facilitar a futura implementação do parser (Trabalho 4) e da análise semântica (Trabalho 5).

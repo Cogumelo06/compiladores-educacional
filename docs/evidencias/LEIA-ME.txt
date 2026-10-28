@@ -1,5 +1,5 @@
-Coloque nesta pasta um print REAL da interface em execução, mostrando o editor
-com código C e a resposta da API após clicar em "Solicitar processamento".
-Nome sugerido: interface-funcionando.png.
-Nenhuma captura foi incluída automaticamente porque a política do navegador
-deste ambiente impediu a navegação para a aplicação local.
+Para documentar a entrega do TRABALHO 3, faça uma captura REAL da interface em execução no seu computador após analisar um código C.
+Sugestão: primeiro capture o exemplo "Estrutura condicional" com a tabela de tokens visível;
+em seguida, capture o código "int @x = 10;" mostrando o erro léxico (linha e coluna).
+Nome sugerido: scanner-funcionando.png e erro-lexico.png.
+Não há imagens fictícias neste pacote: a navegação local via Chromium estava bloqueada por política do ambiente de preparação.

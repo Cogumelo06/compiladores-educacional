@@ -1,29 +1,31 @@
-name: Validacao - Etapa 1
+name: Validacao - Trabalho 3
 
 on:
   push:
   pull_request:
 
 jobs:
-  backend:
-    name: Testes do backend
+  testes:
+    name: Testes unitarios e de interface
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Executar testes da API
+      - name: Testar scanner, API e regressoes
         run: npm --prefix backend test
+      - name: Testar interface, exibicao lexical e regressoes
+        run: npm --prefix frontend test
 
   docker:
-    name: Instalacao limpa com Docker Compose
+    name: Instalacao limpa e integracao via Docker Compose
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Montar as imagens e subir os dois servicos
+      - name: Construir imagens e iniciar servicos
         run: docker compose up --build --force-recreate -d
-      - name: Conferir frontend, proxy e backend
+      - name: Verificar scanner integrado, tokens e erros lexicos
         run: sh scripts/smoke-test.sh
       - name: Mostrar logs em caso de falha
         if: failure()

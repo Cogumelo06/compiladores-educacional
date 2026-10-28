@@ -1,0 +1,212 @@
+
+> compiladores-educacional-backend@3.0.0 test
+> node --test
+
+TAP version 13
+# Subtest: GET /api/hello retorna Hello, World! e a linguagem escolhida
+ok 1 - GET /api/hello retorna Hello, World! e a linguagem escolhida
+  ---
+  duration_ms: 21.841195
+  type: 'test'
+  ...
+# Subtest: GET /api/health confirma disponibilidade do backend
+ok 2 - GET /api/health confirma disponibilidade do backend
+  ---
+  duration_ms: 3.185539
+  type: 'test'
+  ...
+# Subtest: rota desconhecida responde 404
+ok 3 - rota desconhecida responde 404
+  ---
+  duration_ms: 1.692893
+  type: 'test'
+  ...
+# Subtest: POST /api/analyze recebe e tokeniza o código C sem executá-lo
+ok 4 - POST /api/analyze recebe e tokeniza o código C sem executá-lo
+  ---
+  duration_ms: 7.358824
+  type: 'test'
+  ...
+# Subtest: aceita caracteres especiais, acentos e código propositalmente incorreto
+ok 5 - aceita caracteres especiais, acentos e código propositalmente incorreto
+  ---
+  duration_ms: 2.628482
+  type: 'test'
+  ...
+# Subtest: rejeita texto vazio ou somente espaços
+ok 6 - rejeita texto vazio ou somente espaços
+  ---
+  duration_ms: 4.200686
+  type: 'test'
+  ...
+# Subtest: rejeita campo obrigatório ausente e tipos incorretos
+ok 7 - rejeita campo obrigatório ausente e tipos incorretos
+  ---
+  duration_ms: 13.224041
+  type: 'test'
+  ...
+# Subtest: rejeita JSON malformado
+ok 8 - rejeita JSON malformado
+  ---
+  duration_ms: 2.412051
+  type: 'test'
+  ...
+# Subtest: rejeita Content-Type incompatível
+ok 9 - rejeita Content-Type incompatível
+  ---
+  duration_ms: 2.035462
+  type: 'test'
+  ...
+# Subtest: não permite entrada além de 32 KB
+ok 10 - não permite entrada além de 32 KB
+  ---
+  duration_ms: 5.100166
+  type: 'test'
+  ...
+# Subtest: mantém o backend funcional após uma requisição inválida
+ok 11 - mantém o backend funcional após uma requisição inválida
+  ---
+  duration_ms: 2.203251
+  type: 'test'
+  ...
+# Subtest: API responde com posições, categorias e lexemas na ordem correta
+ok 12 - API responde com posições, categorias e lexemas na ordem correta
+  ---
+  duration_ms: 2.49938
+  type: 'test'
+  ...
+# Subtest: API retorna sucesso false e erros acumulados sem tratar falha léxica como HTTP 500
+ok 13 - API retorna sucesso false e erros acumulados sem tratar falha léxica como HTTP 500
+  ---
+  duration_ms: 1.20574
+  type: 'test'
+  ...
+# Subtest: API aceita sintaxe incorreta se os tokens forem válidos
+ok 14 - API aceita sintaxe incorreta se os tokens forem válidos
+  ---
+  duration_ms: 1.668958
+  type: 'test'
+  ...
+# Subtest: reconhece todas as palavras reservadas do subconjunto
+ok 15 - reconhece todas as palavras reservadas do subconjunto
+  ---
+  duration_ms: 1.787874
+  type: 'test'
+  ...
+# Subtest: identificadores com _ inicial e dígitos subsequentes; maiúsculas são distintas
+ok 16 - identificadores com _ inicial e dígitos subsequentes; maiúsculas são distintas
+  ---
+  duration_ms: 0.885735
+  type: 'test'
+  ...
+# Subtest: inteiros e reais decimais produzem categorias corretas
+ok 17 - inteiros e reais decimais produzem categorias corretas
+  ---
+  duration_ms: 0.27652
+  type: 'test'
+  ...
+# Subtest: literais string e caractere com escape suportado
+ok 18 - literais string e caractere com escape suportado
+  ---
+  duration_ms: 0.167409
+  type: 'test'
+  ...
+# Subtest: operadores simples e compostos usam regra do lexema mais longo
+ok 19 - operadores simples e compostos usam regra do lexema mais longo
+  ---
+  duration_ms: 0.270982
+  type: 'test'
+  ...
+# Subtest: todos os delimitadores suportados
+ok 20 - todos os delimitadores suportados
+  ---
+  duration_ms: 0.179436
+  type: 'test'
+  ...
+# Subtest: comentários simples e de bloco são ignorados
+ok 21 - comentários simples e de bloco são ignorados
+  ---
+  duration_ms: 0.270792
+  type: 'test'
+  ...
+# Subtest: espaços não geram token e linhas CRLF, CR e LF contam corretamente
+ok 22 - espaços não geram token e linhas CRLF, CR e LF contam corretamente
+  ---
+  duration_ms: 0.211635
+  type: 'test'
+  ...
+# Subtest: índices de token preservam posição no texto original
+ok 23 - índices de token preservam posição no texto original
+  ---
+  duration_ms: 0.506192
+  type: 'test'
+  ...
+# Subtest: caracteres desconhecidos acumulam erros sem interromper varredura
+ok 24 - caracteres desconhecidos acumulam erros sem interromper varredura
+  ---
+  duration_ms: 0.637988
+  type: 'test'
+  ...
+# Subtest: comentário de bloco não fechado gera erro com localização
+ok 25 - comentário de bloco não fechado gera erro com localização
+  ---
+  duration_ms: 0.309129
+  type: 'test'
+  ...
+# Subtest: literal numérico malformado não vira identificador válido
+ok 26 - literal numérico malformado não vira identificador válido
+  ---
+  duration_ms: 0.239245
+  type: 'test'
+  ...
+# Subtest: string não fechada e escape inválido produzem erros
+ok 27 - string não fechada e escape inválido produzem erros
+  ---
+  duration_ms: 0.174328
+  type: 'test'
+  ...
+# Subtest: caractere vazio ou com mais de um caractere gera erro
+ok 28 - caractere vazio ou com mais de um caractere gera erro
+  ---
+  duration_ms: 0.119918
+  type: 'test'
+  ...
+# Subtest: scanner não atua como parser: sintaxe incompleta continua tokenizada
+ok 29 - scanner não atua como parser: sintaxe incompleta continua tokenizada
+  ---
+  duration_ms: 0.11468
+  type: 'test'
+  ...
+# Subtest: código vazio, espaços e apenas comentários retornam listas vazias
+ok 30 - código vazio, espaços e apenas comentários retornam listas vazias
+  ---
+  duration_ms: 0.159387
+  type: 'test'
+  ...
+# Subtest: token final do arquivo não exige delimitador nem nova linha
+ok 31 - token final do arquivo não exige delimitador nem nova linha
+  ---
+  duration_ms: 0.128802
+  type: 'test'
+  ...
+# Subtest: scanner não executa o código recebido
+ok 32 - scanner não executa o código recebido
+  ---
+  duration_ms: 0.133358
+  type: 'test'
+  ...
+# Subtest: scanner exige entrada textual para uso direto
+ok 33 - scanner exige entrada textual para uso direto
+  ---
+  duration_ms: 0.411421
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 176.886477

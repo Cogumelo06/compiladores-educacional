@@ -1,0 +1,110 @@
+
+> compiladores-educacional-frontend@3.0.0 test
+> node --test
+
+TAP version 13
+# Subtest: interface inclui todos os campos e regiões solicitados
+ok 1 - interface inclui todos os campos e regiões solicitados
+  ---
+  duration_ms: 1.163468
+  type: 'test'
+  ...
+# Subtest: três exemplos são exclusivos do subconjunto C e identificáveis
+ok 2 - três exemplos são exclusivos do subconjunto C e identificáveis
+  ---
+  duration_ms: 0.220878
+  type: 'test'
+  ...
+# Subtest: contagem de linhas e caracteres preserva conteúdo informado
+ok 3 - contagem de linhas e caracteres preserva conteúdo informado
+  ---
+  duration_ms: 0.6399
+  type: 'test'
+  ...
+# Subtest: validação distingue entrada vazia, espaços e código arbitrário
+ok 4 - validação distingue entrada vazia, espaços e código arbitrário
+  ---
+  duration_ms: 0.108421
+  type: 'test'
+  ...
+# Subtest: seleção dos três exemplos preenche o editor, permitindo substituição
+ok 5 - seleção dos três exemplos preenche o editor, permitindo substituição
+  ---
+  duration_ms: 0.638177
+  type: 'test'
+  ...
+# Subtest: edição manual mantém texto e desmarca a seleção; botão Limpar restaura estado
+ok 6 - edição manual mantém texto e desmarca a seleção; botão Limpar restaura estado
+  ---
+  duration_ms: 0.253716
+  type: 'test'
+  ...
+# Subtest: formulário vazio impede envio e apresenta erro compreensível
+ok 7 - formulário vazio impede envio e apresenta erro compreensível
+  ---
+  duration_ms: 1.073904
+  type: 'test'
+  ...
+# Subtest: envio usa POST JSON, apresenta resposta real, preserva código e reabilita botão
+ok 8 - envio usa POST JSON, apresenta resposta real, preserva código e reabilita botão
+  ---
+  duration_ms: 0.770203
+  type: 'test'
+  ...
+# Subtest: erro de comunicação altera resultado sem limpar o editor
+ok 9 - erro de comunicação altera resultado sem limpar o editor
+  ---
+  duration_ms: 0.392903
+  type: 'test'
+  ...
+# Subtest: submitSource protege contra respostas malformadas e falhas HTTP
+ok 10 - submitSource protege contra respostas malformadas e falhas HTTP
+  ---
+  duration_ms: 0.70748
+  type: 'test'
+  ...
+# Subtest: categorias de tokens são contadas corretamente
+ok 11 - categorias de tokens são contadas corretamente
+  ---
+  duration_ms: 0.146698
+  type: 'test'
+  ...
+# Subtest: resultado com erro léxico ainda exibe tokens e mensagens com posição
+ok 12 - resultado com erro léxico ainda exibe tokens e mensagens com posição
+  ---
+  duration_ms: 0.322569
+  type: 'test'
+  ...
+# Subtest: navegação didática muda foco sem alterar o código original
+ok 13 - navegação didática muda foco sem alterar o código original
+  ---
+  duration_ms: 0.32343
+  type: 'test'
+  ...
+# Subtest: entrada só com comentários gera aviso de nenhum token sem falha
+ok 14 - entrada só com comentários gera aviso de nenhum token sem falha
+  ---
+  duration_ms: 0.181058
+  type: 'test'
+  ...
+# Subtest: após edição ou limpeza painel de scanner anterior é ocultado
+ok 15 - após edição ou limpeza painel de scanner anterior é ocultado
+  ---
+  duration_ms: 0.351772
+  type: 'test'
+  ...
+# Subtest: interface usa textContent para conteúdo enviado, nunca HTML de origem
+ok 16 - interface usa textContent para conteúdo enviado, nunca HTML de origem
+  ---
+  duration_ms: 0.20198
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 71.313698

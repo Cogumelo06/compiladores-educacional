@@ -1,48 +1,52 @@
-# Registro de Testes — Trabalho 2
+# Registro de testes — Trabalho 3 (scanner léxico)
 
-Registro das verificações executadas durante o desenvolvimento, sem presumir testes não realizados.
+Este documento apresenta apenas verificações efetivamente realizadas, sem supor execução de Docker, CI ou navegador visual não confirmada.
 
-## Ambiente utilizado para a execução
+## Ambiente da preparação
 
-- Data: 21/10/2026.
-- Node.js: **v22.16.0**.
-- Sistema: ambiente Linux.
-- Nginx disponível localmente (v1.26.3), usado para verificar o proxy em um servidor temporário.
-- Docker/Compose: **não instalados no ambiente de preparação**; portanto, a construção de contêineres não foi executada aqui.
+- Data: 28/10/2026.
+- Linux; Node.js v22.16.0; Nginx 1.26.3; curl.
+- O comando Docker não está instalado neste ambiente de preparação. O usuário havia executado Docker Compose e o smoke-test com sucesso **no Trabalho 2** em seu próprio computador. Essa evidência anterior não substitui a verificação específica do Trabalho 3.
 
-## Execuções concluídas
+## Resultados verificados
 
-| Módulo | Tipo | Comando ou procedimento | Aprovados | Reprovados | Resultado |
-|---|---|---|---:|---:|---|
-| Backend | API, validação e regressão | `npm --prefix backend test` | 11 | 0 | **APROVADO** |
-| Frontend | Unitários e interações com DOM simulado | `npm --prefix frontend test` | 10 | 0 | **APROVADO** |
-| Nginx local | Validação de configuração de proxy temporário | `nginx -t -c <configuração de teste>` | 1 verificação | 0 | **APROVADO** |
-| Integração HTTP local | Frontend via Nginx, proxy, endpoints e erros | `BASE_URL=http://127.0.0.1:18765 sh scripts/smoke-test.sh` (backend Node em porta 18766 e Nginx local em 18765) | 1 fluxo | 0 | **APROVADO** |
-| Docker Compose | Instalação reproduzível com contêineres | `docker compose up --build -d` | — | — | **NÃO EXECUTADO** (Docker ausente) |
-| Interface no navegador | Teste ponta a ponta com navegador real e screenshot | Chromium/Playwright | — | — | **NÃO EXECUTADO** (navegador bloqueia acesso a páginas locais por política do ambiente) |
+| Módulo / tipo | Procedimento | Aprovados | Falhas | Resultado |
+|---|---|---:|---:|---|
+| Scanner + backend + endpoints + regressões | `npm --prefix backend test` | 33 | 0 | APROVADO |
+| Interface (DOM simulado) + lógica frontend + regressões | `npm --prefix frontend test` | 16 | 0 | APROVADO |
+| Sintaxe de módulos JavaScript | `node --check` em módulos principais | 4 verificações | 0 | APROVADO |
+| Configuração Nginx de integração local | `nginx -t -c <configuração temporária>` | 1 | 0 | APROVADO |
+| Integração HTTP real com Node e Nginx locais | `BASE_URL=http://127.0.0.1:18765 sh scripts/smoke-test.sh` | 1 fluxo | 0 | APROVADO |
+| Docker Compose | `docker compose up --build -d` | — | — | NÃO EXECUTADO nesta preparação |
+| Navegador Chromium (interface visual) | Navegação local / captura | — | — | BLOQUEADO por política do navegador deste ambiente |
 
-O smoke test local foi realizado usando a mesma estrutura de frontend e backend, com uma configuração de Nginx temporária equivalente ao encaminhamento da rota `/api/` para o servidor Node. **Não comprova a inicialização real dos contêineres.**
+**Total de testes automatizados Node.js: 49 aprovados e 0 reprovados.** Os logs completos das duas suítes estão em `docs/evidencias/testes-backend-trabalho3.txt` e `docs/evidencias/testes-frontend-trabalho3.txt`.
 
-## Comportamentos validados
+## Validações funcionais
 
-**Backend:** `/api/hello` e `/api/health` mantidos; rota 404; envio de código C e confirmação integral; aceitação de caracteres especiais e entradas propositalmente incorretas; rejeição de código vazio ou só espaços; rejeição de campo ausente e tipos incorretos; JSON malformado; `Content-Type` inválido; limite de 32 KB; backend saudável após erros.
+- Tokens corretamente classificados em palavras reservadas, identificadores, literais, operadores e delimitadores.
+- Posições de linha/coluna testadas, inclusive para CRLF, LF, CR, comentários e múltiplas linhas.
+- Operadores com dois caracteres reconhecidos antes dos de um caractere; comentários de linha e de bloco ignorados.
+- Diagnósticos para caractere desconhecido, comentário não fechado, literal numérico inválido, string não fechada, escape inválido e literal de caractere malformado.
+- Scanner preserva tokens já encontrados e continua após caracteres não reconhecidos.
+- Código com sintaxe inválida mas tokens conhecidos é tokenizado, sem parser.
+- API devolve HTTP 200 com `sucesso: false` em erros léxicos, e mantém os códigos HTTP 400, 413, 415 e 422 para problemas com requisições.
+- Interface simula envio real, apresenta tabela, contagens, erros e navegação Anterior/Próximo; código não é interpretado como HTML.
+- Rotas legadas `/api/hello` e `/api/health`, seleção dos três exemplos, editor, limpeza, validações e restauração de controles continuam testados.
+- Nginx local apresentou conteúdo estático, scripts e requisições pelo proxy ao backend real; smoke test verificou código válido, posição de token, erro `@` e HTTP 422 para código vazio.
 
-**Frontend:** existência dos controles obrigatórios; presença e carregamento individual dos três exemplos; edição e limpeza do editor; preservação do texto após envio; contagem de caracteres e linhas; bloqueio de campo vazio; envio de JSON; apresentação do conteúdo devolvido pela API; mensagens de falha de comunicação e de resposta inesperada; reabilitação do botão após a requisição.
+## Falhas encontradas e correções
 
-**Integração HTTP local:** página e scripts servidos pelo Nginx; proxy `GET /api/hello`, `GET /api/health` e `POST /api/analyze` funcional; resposta HTTP 422 para texto contendo somente espaços.
+- Os testes da etapa anterior esperavam apenas o recebimento do texto: foram atualizados para verificar o contrato do scanner sem perder casos de regressão.
+- O Dockerfile copiava apenas os scripts anteriores: foi incluído `token-view.js` na lista dos arquivos estáticos publicados pelo Nginx.
+- O smoke-test validava somente `recebido:true`: foi ampliado para verificar tokens, localizações e erros léxicos reais.
 
-## Problemas encontrados e correções
+## Pendências para validação no computador do aluno
 
-- A interface inicial continha apenas um painel de Hello World: foi substituída por editor, exemplos e painel de processamento.
-- O backend inicial não recebia código: foi adicionado `POST /api/analyze`, com validações e respostas estruturadas.
-- A interface não tratava falhas de envio: foram adicionadas mensagens específicas e recuperação do estado do botão.
-- As rotas anteriores foram preservadas e incluídas nos testes de regressão.
+1. Na pasta local conectada ao repositório, executar `sudo docker compose up --build -d` (se necessário devido às permissões do Docker).
+2. Executar `sh scripts/smoke-test.sh`, confirmar frontend e backend saudáveis com `sudo docker compose ps`.
+3. Abrir `http://localhost:8080` em um navegador, analisar um exemplo e conferir a sequência/tabela de tokens; depois testar `int @x = 10;` para visualizar erros.
+4. Fazer print **real** da interface funcionando e anexá-lo à submissão, se solicitado pelo professor.
+5. Criar commit e enviar ao repositório já existente; verificar o resultado do GitHub Actions após o push.
 
-## Pendências antes da submissão
-
-1. Executar `docker compose up --build -d`, `sh scripts/smoke-test.sh` e `docker compose down` numa máquina com Docker.
-2. Executar o fluxo completo em um navegador e salvar o print solicitado em `docs/evidencias/interface-funcionando.png`.
-3. Realizar commit e push no repositório real e verificar a aba **Actions** do GitHub.
-4. Confirmar que o professor possui acesso ao repositório.
-
-O pipeline GitHub Actions está configurado para testar os dois módulos e o Docker Compose após o push. Seu resultado **ainda não foi observado** nesta preparação.
+Não afirmar validação Docker ou screenshot real desta versão antes de executá-los. O código não executa o programa-fonte submetido; o processamento é exclusivamente léxico.

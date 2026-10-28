@@ -1,4 +1,5 @@
 import { createServer as createHttpServer } from 'node:http';
+import { scan } from './scanner.js';
 
 const MAX_BODY_BYTES = 32 * 1024;
 
@@ -70,15 +71,20 @@ async function handleRequest(request, response) {
     const data = await readJson(request);
     const codigo = validateSubmission(data);
 
-    // Etapa 2: somente recebimento/validação de entrada, sem análise do código C.
+    // Trabalho 3: análise exclusivamente léxica. Erros léxicos retornam HTTP 200
+    // porque a requisição foi válida; "sucesso" diferencia o resultado do scanner.
+    const resultado = scan(codigo);
     respondJson(response, 200, {
       recebido: true,
       linguagem: 'C',
-      etapa: 2,
-      mensagem: 'Código-fonte recebido com sucesso. A análise de compilação será implementada nas próximas etapas.',
+      etapa: 3,
+      mensagem: resultado.sucesso
+        ? `Análise léxica concluída: ${resultado.tokens.length} token(s) identificado(s).`
+        : `Análise léxica concluída com ${resultado.erros.length} erro(s).`,
       caracteres: codigo.length,
       linhas: codigo.split(/\r\n|\r|\n/).length,
       codigo,
+      ...resultado,
     });
     return;
   }

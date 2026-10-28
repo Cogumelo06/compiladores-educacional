@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { EXAMPLES, findExample, sourceStats, validateSource, submitSource, friendlyError } from '../examples.js';
 import { initApplication } from '../app.js';
+import { countCategories } from '../token-view.js';
 
 class FakeElement {
   constructor() {
@@ -15,11 +16,14 @@ class FakeElement {
     this.listeners = {};
     this.dataset = {};
     this.classes = new Set();
+    this.attributes = new Map();
     this.classList = {
       toggle: (name, active) => active ? this.classes.add(name) : this.classes.delete(name),
     };
   }
   appendChild(item) { this.children.push(item); }
+  replaceChildren(...items) { this.children = [...items]; }
+  setAttribute(key, value) { this.attributes.set(key, value); }
   addEventListener(name, callback) { this.listeners[name] = callback; }
   focus() { this.focused = true; }
   async fire(name) { return this.listeners[name]({ preventDefault() {} }); }
@@ -28,7 +32,9 @@ class FakeElement {
 function makePage(fetcher) {
   const ids = ['source-form', 'source-code', 'example-select', 'clear-code',
     'analyze-button', 'source-stats', 'result-title', 'result-message',
-    'form-feedback', 'result-detail', 'result-code', 'result-panel'];
+    'form-feedback', 'result-detail', 'result-code', 'result-panel',
+    'lexical-section', 'token-chips', 'tokens-body', 'lexical-errors', 'token-summary',
+    'category-counts', 'token-inspector', 'previous-token', 'next-token'];
   const elements = Object.fromEntries(ids.map((id) => [id, new FakeElement()]));
   const doc = {
     querySelector: (selector) => elements[selector.substring(1)],
@@ -41,7 +47,8 @@ function makePage(fetcher) {
 test('interface inclui todos os campos e regiões solicitados', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   for (const id of ['source-form', 'source-code', 'example-select', 'analyze-button',
-    'result-panel', 'result-title', 'result-message', 'form-feedback']) {
+    'result-panel', 'result-title', 'result-message', 'form-feedback',
+    'lexical-section', 'token-chips', 'tokens-body', 'lexical-errors', 'token-summary']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
   assert.match(html, /Linguagem C/i);
@@ -109,7 +116,11 @@ test('envio usa POST JSON, apresenta resposta real, preserva código e reabilita
     sent = { url, options };
     return {
       ok: true, status: 200,
-      json: async () => ({ recebido: true, mensagem: 'Recebido!', codigo }),
+      json: async () => ({ recebido: true, mensagem: 'Análise léxica concluída!', codigo,
+        sucesso: true, erros: [], tokens: [
+          { tipo: 'PALAVRA_RESERVADA', lexema: 'int', linha: 1, coluna: 1 },
+          { tipo: 'IDENTIFICADOR', lexema: 'valor', linha: 1, coluna: 5 },
+        ] }),
     };
   });
   page['source-code'].value = codigo;
@@ -120,6 +131,10 @@ test('envio usa POST JSON, apresenta resposta real, preserva código e reabilita
   assert.equal(page['source-code'].value, codigo);
   assert.equal(page['result-code'].textContent, codigo);
   assert.equal(page['result-panel'].dataset.state, 'success');
+  assert.equal(page['lexical-section'].hidden, false);
+  assert.equal(page['tokens-body'].children.length, 2);
+  assert.equal(page['token-chips'].children.length, 2);
+  assert.match(page['token-inspector'].textContent, /Token 1\/2/);
   assert.equal(page['analyze-button'].disabled, false);
 });
 
@@ -137,4 +152,91 @@ test('submitSource protege contra respostas malformadas e falhas HTTP', async ()
   await assert.rejects(() => submitSource('ok', async () => ({ ok: true, json: async () => ({ recebido: true, mensagem: 'ok', codigo: 'não é o mesmo' }) })), /RESPONSE_ERROR/);
   await assert.rejects(() => submitSource('ok', async () => ({ ok: false, status: 500, json: async () => ({ mensagem: 'stack do servidor' }) })), /SERVER_ERROR/);
   assert.match(friendlyError(new Error('NETWORK_ERROR')), /comunicar/);
+});
+
+
+test('categorias de tokens são contadas corretamente', () => {
+  assert.deepEqual(countCategories([
+    { tipo: 'OPERADOR' }, { tipo: 'OPERADOR' }, { tipo: 'IDENTIFICADOR' },
+  ]), { OPERADOR: 2, IDENTIFICADOR: 1 });
+});
+
+test('resultado com erro léxico ainda exibe tokens e mensagens com posição', async () => {
+  const codigo = 'int @ = 1;';
+  const page = makePage(async () => ({
+    ok: true, status: 200, json: async () => ({
+      recebido: true, codigo, mensagem: '1 erro léxico', sucesso: false,
+      tokens: [{ tipo: 'PALAVRA_RESERVADA', lexema: 'int', linha: 1, coluna: 1 }],
+      erros: [{ tipo: 'ERRO_LEXICO', lexema: '@', linha: 1, coluna: 5,
+        mensagem: 'Caractere não reconhecido' }],
+    }),
+  }));
+  page['source-code'].value = codigo;
+  await page['source-form'].fire('submit');
+  assert.equal(page['result-panel'].dataset.state, 'error');
+  assert.equal(page['lexical-section'].hidden, false);
+  assert.match(page['lexical-errors'].children[0].textContent, /Linha 1, coluna 5/);
+  assert.equal(page['token-chips'].children.length, 1);
+});
+
+test('navegação didática muda foco sem alterar o código original', async () => {
+  const codigo = 'int x;';
+  const page = makePage(async () => ({
+    ok: true, status: 200, json: async () => ({
+      recebido: true, codigo, mensagem: 'ok', sucesso: true, erros: [],
+      tokens: [{ tipo: 'PALAVRA_RESERVADA', lexema: 'int', linha: 1, coluna: 1 },
+        { tipo: 'IDENTIFICADOR', lexema: 'x', linha: 1, coluna: 5 }],
+    }),
+  }));
+  page['source-code'].value = codigo;
+  await page['source-form'].fire('submit');
+  assert.equal(page['previous-token'].disabled, true);
+  page['next-token'].onclick();
+  assert.match(page['token-inspector'].textContent, /Token 2\/2/);
+  assert.equal(page['next-token'].disabled, true);
+  page['token-chips'].children[0].listeners.click();
+  assert.match(page['token-inspector'].textContent, /Token 1\/2/);
+  assert.equal(page['source-code'].value, codigo);
+});
+
+test('entrada só com comentários gera aviso de nenhum token sem falha', async () => {
+  const codigo = '/* comentário */';
+  const page = makePage(async () => ({
+    ok: true, status: 200, json: async () => ({
+      recebido: true, codigo, mensagem: '0 tokens', sucesso: true, tokens: [], erros: [],
+    }),
+  }));
+  page['source-code'].value = codigo;
+  await page['source-form'].fire('submit');
+  assert.match(page['category-counts'].children[0].textContent, /Nenhum token/);
+  assert.equal(page['next-token'].disabled, true);
+});
+
+test('após edição ou limpeza painel de scanner anterior é ocultado', async () => {
+  const codigo = 'x';
+  const page = makePage(async () => ({
+    ok: true, status: 200, json: async () => ({
+      recebido: true, codigo, mensagem: 'ok', sucesso: true, erros: [],
+      tokens: [{ tipo: 'IDENTIFICADOR', lexema: 'x', linha: 1, coluna: 1 }],
+    }),
+  }));
+  page['source-code'].value = codigo;
+  await page['source-form'].fire('submit');
+  assert.equal(page['lexical-section'].hidden, false);
+  await page['clear-code'].fire('click');
+  assert.equal(page['lexical-section'].hidden, true);
+});
+
+test('interface usa textContent para conteúdo enviado, nunca HTML de origem', async () => {
+  const codigo = '<script>alert(1)</script>';
+  const page = makePage(async () => ({
+    ok: true, status: 200, json: async () => ({
+      recebido: true, codigo, mensagem: 'Erro', sucesso: false, tokens: [],
+      erros: [{ lexema: '<', linha: 1, coluna: 1, mensagem: '<img src=x onerror=alert(1)>' }],
+    }),
+  }));
+  page['source-code'].value = codigo;
+  await page['source-form'].fire('submit');
+  assert.equal(page['result-code'].textContent, codigo);
+  assert.match(page['lexical-errors'].children[0].textContent, /<img/);
 });

@@ -63,7 +63,15 @@ export async function submitSource(code, fetcher = fetch) {
   }
 
   if (data.recebido !== true || typeof data.mensagem !== 'string'
-      || typeof data.codigo !== 'string' || data.codigo !== code) {
+      || typeof data.codigo !== 'string' || data.codigo !== code
+      || typeof data.sucesso !== 'boolean' || !Array.isArray(data.tokens)
+      || !Array.isArray(data.erros)
+      || !data.tokens.every((item) => typeof item.tipo === 'string'
+        && typeof item.lexema === 'string' && Number.isInteger(item.linha)
+        && Number.isInteger(item.coluna))
+      || !data.erros.every((item) => typeof item.mensagem === 'string'
+        && typeof item.lexema === 'string' && Number.isInteger(item.linha)
+        && Number.isInteger(item.coluna))) {
     throw new Error('RESPONSE_ERROR');
   }
   return data;

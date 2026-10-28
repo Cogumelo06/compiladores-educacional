@@ -21,6 +21,13 @@ curl -fsS "$BASE_URL/api/health" | grep -q '"status":"ok"' || { echo 'ERRO: heal
 response="$(curl -fsS "$BASE_URL/api/analyze" -H 'Content-Type: application/json' -d '{"codigo":"int numero = 10;"}')"
 printf '%s' "$response" | grep -q '"recebido":true' || { echo 'ERRO: código não recebido.' >&2; exit 1; }
 printf '%s' "$response" | grep -q '"codigo":"int numero = 10;"' || { echo 'ERRO: código alterado.' >&2; exit 1; }
+printf '%s' "$response" | grep -q '"sucesso":true' || { echo 'ERRO: scanner não aprovou exemplo C.' >&2; exit 1; }
+printf '%s' "$response" | grep -q '"tipo":"PALAVRA_RESERVADA","lexema":"int"' || { echo 'ERRO: token int ausente.' >&2; exit 1; }
+printf '%s' "$response" | grep -q '"linha":1,"coluna":5' || { echo 'ERRO: posição do identificador ausente.' >&2; exit 1; }
+invalid="$(curl -fsS "$BASE_URL/api/analyze" -H 'Content-Type: application/json' -d '{"codigo":"int @x;"}')"
+printf '%s' "$invalid" | grep -q '"sucesso":false' || { echo 'ERRO: falha léxica não indicada.' >&2; exit 1; }
+printf '%s' "$invalid" | grep -q '"lexema":"@"' || { echo 'ERRO: erro lexical @ ausente.' >&2; exit 1; }
+curl -fsS "$BASE_URL/token-view.js" | grep -q 'showLexicalResults' || { echo 'ERRO: visualização do scanner não encontrada.' >&2; exit 1; }
 status="$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/api/analyze" -H 'Content-Type: application/json' -d '{"codigo":"   "}')"
 [ "$status" = 422 ] || { echo "ERRO: esperado 422 para entrada vazia, recebido $status" >&2; exit 1; }
-printf 'OK: frontend, exemplos, proxy, hello, health, POST JSON e validação 422.\n'
+printf 'OK: frontend, exemplos, scanner, tokens, erros léxicos, proxy, hello, health e validação 422.\n'
